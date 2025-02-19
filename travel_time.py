@@ -1,42 +1,43 @@
 import requests
 import csv
-import time
-from datetime import datetime
+import datetime
 import pytz
 
-# API Key
 API_KEY = "AIzaSyDeU40JTOwi2EtX38E8ZNLrSx_HYNfE1os"
-
-# Origin & Destination
 ORIGIN = "Unit no. 304, Sentinel Hiranandani Business Park, Powai, Mumbai, Maharashtra 400076"
 DESTINATION = "New Mahada Colony, SV Patel Nagar, Andheri West, Mumbai, Maharashtra 400061"
 
-# Timezone
-IST = pytz.timezone('Asia/Kolkata')
+URL = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={DESTINATION}&key={API_KEY}"
 
-# Function to fetch travel time
-def get_travel_time():
-    url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={DESTINATION}&key={API_KEY}"
-    response = requests.get(url)
+def fetch_travel_time():
+    response = requests.get(URL)
     data = response.json()
-    
-    if "rows" in data and data["rows"][0]["elements"][0]["status"] == "OK":
+
+    if data["status"] == "OK":
         duration = data["rows"][0]["elements"][0]["duration"]["text"]
-        current_time = datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S')
-        return current_time, duration
+        now = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
+
+        return now, duration
     else:
-        return datetime.now(IST).strftime('%Y-%m-%d %H:%M:%S'), "API Error"
+        return None, None
 
-# Run the script every minute
-while True:
-    timestamp, travel_time = get_travel_time()
+def write_to_csv():
+    now, duration = fetch_travel_time()
+    if now and duration:
+        file_path = "travel_time_log.csv"
+        header = ["Timestamp (IST)", "Duration"]
 
-    # Save to CSV
-    with open("travel_time_log.csv", mode="a", newline="") as file:
-        writer = csv.writer(file)
-        writer.writerow([timestamp, travel_time])
-    
-    print(f"{timestamp} - Travel Time: {travel_time}")
+        try:
+            with open(file_path, "r") as file:
+                pass  # Check if file exists
+        except FileNotFoundError:
+            with open(file_path, "w", newline="") as file:
+                writer = csv.writer(file)
+                writer.writerow(header)
 
-    # Wait for 1 minute before running again
-    time.sleep(60)
+        with open(file_path, "a", newline="") as file:
+            writer = csv.writer(file)
+            writer.writerow([now, duration])
+
+if __name__ == "__main__":
+    write_to_csv()
