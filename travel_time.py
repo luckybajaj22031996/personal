@@ -1,43 +1,52 @@
 import requests
 import csv
+import os
 import datetime
 import pytz
 
+# API Key (Make sure it's directly in the script or stored securely in GitHub secrets)
 API_KEY = "AIzaSyDeU40JTOwi2EtX38E8ZNLrSx_HYNfE1os"
+
+# Origin & Destination
 ORIGIN = "Unit no. 304, Sentinel Hiranandani Business Park, Powai, Mumbai, Maharashtra 400076"
 DESTINATION = "New Mahada Colony, SV Patel Nagar, Andheri West, Mumbai, Maharashtra 400061"
 
-URL = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={DESTINATION}&key={API_KEY}"
+# Timezone for IST
+IST = pytz.timezone('Asia/Kolkata')
 
-def fetch_travel_time():
-    response = requests.get(URL)
-    data = response.json()
+# Get current IST time
+now = datetime.datetime.now(IST)
+timestamp = now.strftime("%Y-%m-%d %H:%M:%S")
 
-    if data["status"] == "OK":
-        duration = data["rows"][0]["elements"][0]["duration"]["text"]
-        now = datetime.datetime.now(pytz.timezone("Asia/Kolkata")).strftime("%Y-%m-%d %H:%M:%S")
+# API Request URL
+url = f"https://maps.googleapis.com/maps/api/distancematrix/json?origins={ORIGIN}&destinations={DESTINATION}&key={API_KEY}"
 
-        return now, duration
-    else:
-        return None, None
+# Fetch data from Google Maps API
+response = requests.get(url)
+data = response.json()
 
-def write_to_csv():
-    now, duration = fetch_travel_time()
-    if now and duration:
-        file_path = "travel_time_log.csv"
-        header = ["Timestamp (IST)", "Duration"]
+# Extract travel time (in minutes)
+try:
+    duration_seconds = data["rows"][0]["elements"][0]["duration"]["value"]
+    duration_minutes = duration_seconds // 60
+except (KeyError, IndexError):
+    duration_minutes = "API_ERROR"  # If API fails, log error
 
-        try:
-            with open(file_path, "r") as file:
-                pass  # Check if file exists
-        except FileNotFoundError:
-            with open(file_path, "w", newline="") as file:
-                writer = csv.writer(file)
-                writer.writerow(header)
+# CSV file path
+csv_file = "travel_time_log.csv"
 
-        with open(file_path, "a", newline="") as file:
-            writer = csv.writer(file)
-            writer.writerow([now, duration])
+# Ensure file exists with headers
+if not os.path.exists(csv_file):
+    with open(csv_file, "w", newline="") as f:
+        writer = csv.writer(f)
+        writer.writerow(["timestamp", "duration_minutes"])
 
-if __name__ == "__main__":
-    write_to_csv()
+# Append new data
+with open(csv_file, "a", newline="") as f:
+    writer = csv.writer(f)
+    writer.writerow([timestamp, duration_minutes])
+
+# Debugging output
+print(f"Logged at {timestamp}: {duration_minutes} minutes")
+print("Current directory:", os.getcwd())
+
