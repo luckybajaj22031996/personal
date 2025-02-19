@@ -2,8 +2,14 @@ name: Travel Time Logger
 
 on:
   schedule:
-    - cron: '*/5 10-15 * * *'  # Runs every 10 minutes
-  workflow_dispatch:  # Allows manual trigger
+    # Every 5 minutes from 4 PM to 9 PM IST (Powai → Andheri West)
+    - cron: '*/5 10-14 * * *'
+    # Every 5 minutes from 8 AM to 12 PM IST (Andheri West → Powai)
+    - cron: '*/5 2-6 * * *'
+  workflow_dispatch:  # Allows manual triggering
+
+permissions:
+  contents: write
 
 jobs:
   log_travel_time:
@@ -22,15 +28,16 @@ jobs:
         run: pip install requests pytz
 
       - name: Run travel time logger
-        run: python travel_time.py
+        run: python travel_time_logger.py
 
       - name: Commit and push changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git add travel_time_log.csv
-          git commit -m "Update travel time log [skip ci]" || echo "No changes to commit"
+          git add powai_to_andheri_log.csv andheri_to_powai_log.csv
+          git commit -m "Update travel time logs [skip ci]" || echo "No changes to commit"
           git push
+
 
 
 
