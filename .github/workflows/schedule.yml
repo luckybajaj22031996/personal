@@ -28,7 +28,7 @@ jobs:
         run: pip install requests pytz
 
       - name: Run travel time logger
-        run: python travel_time_logger.py
+        run: python travel_time.py
 
       - name: Commit and push changes
         run: |
