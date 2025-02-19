@@ -3,17 +3,17 @@ name: Run Travel Time Logger
 on:
   schedule:
     - cron: '*/1 * * * *'  # Runs every 1 minute
-  workflow_dispatch:
+  workflow_dispatch:  # Allows manual triggering
 
 jobs:
   run-script:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
 
@@ -21,11 +21,12 @@ jobs:
         run: pip install requests pytz
 
       - name: Run Python Script
-        run: python travel_time_logger.py
+        run: python travel_time.py
 
-      - name: Upload CSV as Artifact
-        uses: actions/upload-artifact@v3
+      - name: Upload CSV File
+        uses: actions/upload-artifact@v4
         with:
-          name: travel_time_data
+          name: travel_time_logs
           path: travel_time_log.csv
+
 
