@@ -11,7 +11,6 @@ import requests
 import datetime
 import pytz
 import csv
-import time
 
 # Google Maps API Key
 API_KEY = "AIzaSyDeU40JTOwi2EtX38E8ZNLrSx_HYNfE1os"
@@ -29,10 +28,6 @@ ist = pytz.timezone("Asia/Kolkata")
 # CSV File Name
 CSV_FILE = "travel_time_log.csv"
 
-# Interval (in seconds) → Example: Every 10 minutes
-INTERVAL = 1 * 60
-
-# Function to fetch travel time
 def get_travel_time():
     params = {
         "origin": ORIGIN,
@@ -59,12 +54,5 @@ def get_travel_time():
     else:
         print("Error fetching data:", data)
 
-# Initialize CSV file with headers if running for the first time
-with open(CSV_FILE, mode="w", newline="") as file:
-    writer = csv.writer(file)
-    writer.writerow(["Timestamp (IST)", "Travel Duration"])
-
-# Run script at intervals
-while True:
-    get_travel_time()
-    time.sleep(INTERVAL)  # Wait for the next cycle
+# Run the function once and exit
+get_travel_time()
