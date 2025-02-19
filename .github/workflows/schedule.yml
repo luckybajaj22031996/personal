@@ -2,7 +2,7 @@ name: Travel Time Logger
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Runs every 10 minutes
+    - cron: '*/5 10-15 * * *'  # Runs every 10 minutes
   workflow_dispatch:  # Allows manual trigger
 
 jobs:
