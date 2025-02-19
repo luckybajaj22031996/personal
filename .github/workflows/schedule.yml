@@ -1,49 +1,37 @@
-name: Run Travel Time Logger
+name: Travel Time Logger
 
 on:
   schedule:
-    - cron: '*/1 * * * *'  # Runs every minute
-  workflow_dispatch:  # Allows manual execution
-
-permissions:
-  contents: write
+    - cron: '*/1 * * * *'  # Runs every 10 minutes
+  workflow_dispatch:  # Allows manual trigger
 
 jobs:
-  run-script:
+  log_travel_time:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
-        with:
-          ref: main
 
-      - name: Set Up Python
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.9
+          python-version: '3.9'
 
-      - name: Install Dependencies
-        run: pip install requests pytz pandas
+      - name: Install dependencies
+        run: pip install requests pytz
 
-      - name: Run Python Script
-        run: |
-          python travel_time.py | tee script_output.log
+      - name: Run travel time logger
+        run: python travel_time.py
 
-      - name: Ensure CSV Exists
-        run: |
-          if [ ! -f travel_time_log.csv ]; then
-            echo "timestamp,duration_minutes" > travel_time_log.csv
-          fi
-
-      - name: Commit & Push CSV File
+      - name: Commit and push changes
         run: |
           git config --global user.name "github-actions"
           git config --global user.email "github-actions@github.com"
-          git checkout main
-
           git add travel_time_log.csv
           git commit -m "Update travel time log [skip ci]" || echo "No changes to commit"
-          git push https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git || echo "No changes to push"
+          git push
+
 
 
 
