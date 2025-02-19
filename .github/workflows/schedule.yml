@@ -3,7 +3,7 @@ name: Run Travel Time Logger
 on:
   schedule:
     - cron: '*/1 * * * *'  # Runs every 1 minute
-  workflow_dispatch:  # Allows manual trigger
+  workflow_dispatch:
 
 jobs:
   run-script:
@@ -21,4 +21,11 @@ jobs:
         run: pip install requests pytz
 
       - name: Run Python Script
-        run: python travel_time.py
+        run: python travel_time_logger.py
+
+      - name: Upload CSV as Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: travel_time_data
+          path: travel_time_log.csv
+
